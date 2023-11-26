@@ -24,12 +24,7 @@ public class GroupLines {
 
         List<Set<String[]>> lists = groupStrings(splitStringsList);
 
-        writeToFile(lists, outputFileName);
-
-//        long endTime = System.currentTimeMillis();
-//        System.out.println("================================================");
-//        System.out.println("Execution time: " + (endTime - startTime) + " ms");
-//        System.out.println("================================================");
+        writeToFile(lists);
     }
 
     private static List<String[]> getSplitStringsList(BufferedReader reader) {
@@ -59,7 +54,7 @@ public class GroupLines {
         List<Set<String[]>> groupList = new ArrayList<>();
 
         List<String[]> stringsArrList = groupByIndexes(list);
-        Map<String, Map<Integer, Set<String[]>>> groupedMap = groupToCommonMap(groupByIndexes(list));
+        Map<String, Map<Integer, List<String[]>>> groupedMap = groupToCommonMap(stringsArrList);
 
         for (String[] strArr : stringsArrList) {
             Set<String[]> processedGroup = processGroup(strArr, groupedMap);
@@ -71,7 +66,7 @@ public class GroupLines {
         return groupList;
     }
 
-    private static Set<String[]> processGroup(String[] strArr, Map<String, Map<Integer, Set<String[]>>> groupedMap) {
+    private static Set<String[]> processGroup(String[] strArr, Map<String, Map<Integer, List<String[]>>> groupedMap) {
         Set<String[]> processedGroup = new HashSet<>();
         Queue<String[]> awaitingGroup = new LinkedList<>();
         awaitingGroup.add(strArr);
@@ -102,19 +97,19 @@ public class GroupLines {
         }
     }
 
-    private static Map<String, Map<Integer, Set<String[]>>> groupToCommonMap(List<String[]> list) {
-        Map<String, Map<Integer, Set<String[]>>> map = new HashMap<>();
+    private static Map<String, Map<Integer, List<String[]>>> groupToCommonMap(List<String[]> list) {
+        Map<String, Map<Integer, List<String[]>>> map = new HashMap<>();
 
         for (String[] stringArr : list) {
             for (int i = 0; i < stringArr.length; i++) {
                 String currentString = stringArr[i];
 
-                map.computeIfAbsent(currentString, k -> new HashMap<>())
-                        .computeIfAbsent(i, v -> new HashSet<>())
+                map.computeIfAbsent(currentString, k -> new HashMap<>(3))
+                        .computeIfAbsent(i, v -> new ArrayList<>(3))
                         .add(stringArr);
             }
         }
-        map.remove("");
+        map.remove("\"\"");
         return map;
     }
 
@@ -126,18 +121,15 @@ public class GroupLines {
         for (int i = 0; i < maxLength; i++) {
             int finalI = i;
             Map<String, List<String[]>> map = currentList.stream()
-                    .parallel()
                     .filter(arr -> !arr[finalI].isEmpty())
                     .collect(Collectors.groupingBy(arr -> arr[finalI]));
 
             List<String[]> list = map.values().stream()
-                    .parallel()
                     .filter(l -> l.size() > 1)
                     .flatMap(List::stream)
                     .collect(Collectors.toList());
 
             currentList = currentList.stream()
-                    .parallel()
                     .filter(arr -> arr.length > finalI + 1)
                     .collect(Collectors.toList());
 
