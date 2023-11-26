@@ -84,11 +84,11 @@ public class GroupLines {
         return processedGroup;
     }
 
-    private static void processCurrentStringArr(String[] currentStringArr, Map<String, Map<Integer, Set<String[]>>> groupedMap, Queue<String[]> awaitingGroup) {
+    private static void processCurrentStringArr(String[] currentStringArr, Map<String, Map<Integer, List<String[]>>> groupedMap, Queue<String[]> awaitingGroup) {
         for (int i = 0; i < currentStringArr.length; i++) {
             String currentString = currentStringArr[i];
-            if (!currentString.isEmpty()) {
-                Set<String[]> strings = groupedMap.get(currentString).remove(i);
+            if (!currentString.isEmpty() && !currentString.contains("\"\"")) {
+                List<String[]> strings = groupedMap.get(currentString).remove(i);
 
                 if (strings != null && !strings.isEmpty()) {
                     awaitingGroup.addAll(strings);
