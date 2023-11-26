@@ -9,21 +9,18 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
-
 public class GroupLines {
 
     public static void main(String[] args) throws IOException {
 
         if (args.length != 1) {
-            System.err.println("Usage: java -Xmx1G -jar group-lines-1.0.jar <output-file-name>");
+            System.err.println("Usage: java -Xmx1G -jar group-lines-1.0.jar <test-file-name-absolute-path>");
             System.exit(1);
         }
 
-        String outputFileName = args[0];
+        String testFileName = args[0];
 
-//        long startTime = System.currentTimeMillis();
-
-        List<String[]> splitStringsList = getSplitStringsList(readFile());
+        List<String[]> splitStringsList = getSplitStringsList(readFile(testFileName));
 
         List<Set<String[]>> lists = groupStrings(splitStringsList);
 
@@ -44,12 +41,10 @@ public class GroupLines {
                 .collect(toList());
     }
 
-    private static BufferedReader readFile() throws IOException {
-        FileInputStream inputStream = new FileInputStream("./lng-big.csv");
-        //InputStream inputStream = new URL("https://github.com/PeacockTeam/new-job/releases/download/v1.0/lng-4.txt.gz").openStream();
-        //GZIPInputStream gzip = new GZIPInputStream(inputStream);
-        //return new BufferedReader(new InputStreamReader(gzip));
-        return new BufferedReader(new InputStreamReader(inputStream));
+    private static BufferedReader readFile(String file) throws IOException {
+        FileInputStream inputStream = new FileInputStream(file);
+        InputStreamReader reader = new InputStreamReader(inputStream);
+        return new BufferedReader(reader);
     }
 
     private static Predicate<String> getFilterPredicate() {
@@ -154,12 +149,12 @@ public class GroupLines {
                 .collect(toList());
     }
 
-    private static void writeToFile(List<Set<String[]>> groups, String fileName) {
+    private static void writeToFile(List<Set<String[]>> groups) {
         List<Set<String[]>> sortedGroups = groups.stream()
                 .sorted((arr1, arr2) -> arr2.size() - arr1.size())
                 .collect(toList());
 
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("./" + fileName))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("./result.txt"))) {
             writer.write("Общее количество групп: " + groups.size());
             writer.newLine();
             writer.newLine();
